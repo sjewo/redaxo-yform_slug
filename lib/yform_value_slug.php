@@ -9,14 +9,37 @@ class rex_yform_value_slug extends rex_yform_value_abstract
     {
         $separator = $this->getElement('separator') ?: '-';
 
-        $field = $this->getElement('field');
-        $fieldValue = $this->params['value_pool']['email'][$field];
+        $fields = $this->getElement('fields');
+
+	// idetify fields
+	preg_match_all('/\{\{(.*?)\}\}/', $fields, $matches);
+
+	$fieldValue = $fields;
+
+	foreach($matches[1] as $field) {
+	  $value = $this->params['value_pool']['email'][$field];
+	  $fieldValue   = preg_replace("/\{\{".$field."\}\}/", $value, $fieldValue);
+	}
+
+//	$fields_list = explode('|', $fields);
+//        $fieldValue = [];
+
+//	foreach($fields_list as $field) { 
+//       	 array_push($fieldValue, $this->params['value_pool']['email'][$field]);
+//	}
+
+//	$fieldValueImplode = implode(" ", $fieldValue);
 
         $generator = new SlugGenerator((new SlugOptions)
             ->setLocale('de')
+            ->setValidChars('a-zA-Z0-9_')
             ->setDelimiter($separator)
         );
+	
+
         $slug = $generator->generate($fieldValue);
+	
+	//$slug = $fieldValue;
 
         $this->setValue($slug);
 
@@ -51,7 +74,7 @@ class rex_yform_value_slug extends rex_yform_value_abstract
             'values' => [
                 'name' => ['type' => 'name', 'label' => rex_i18n::msg('yform_values_defaults_name')],
                 'label' => ['type' => 'text', 'label' => rex_i18n::msg('yform_values_defaults_label')],
-                'field' => ['type' => 'select_name', 'label' => rex_i18n::msg('yform_values_slug_field')],
+                'fields' => ['type' => 'text', 'label' => rex_i18n::msg('yform_values_slug_field')],
                 'separator' => [
                     'type' => 'choice',
                     'label' => rex_i18n::msg('yform_values_slug_separator'),
